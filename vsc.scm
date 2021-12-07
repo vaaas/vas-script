@@ -34,9 +34,18 @@
 
 (define (serialise x lang)
 	(cond
-		((list? x) (string-join (map (lambda (x) (serialise x lang)) x) ""))
+		((list? x) (serialise-list x lang))
 		((symbol? x) (symbol->string x))
 		((number? x) (number->string x))
 		((string? x) x)))
+
+(define (serialise-list x lang)
+	(let ((first (car x)) (rest (cdr x)))
+	(cond
+		((bound? first)
+			(primitive-eval
+					(list (string->symbol (string-append lang "/" first)))
+					rest))
+))
 
 (main (cdr (command-line)))
