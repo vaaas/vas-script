@@ -1,5 +1,4 @@
 (use-modules (ice-9 ftw))
-(use-modules (ice-9 pretty-print))
 
 (define-macro (push x xs)
 	`(set! ,xs (cons ,x ,xs)))

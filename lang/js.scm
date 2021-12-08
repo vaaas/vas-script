@@ -13,7 +13,7 @@
 		"(" (string-join (map (lambda (x) (serialise x "js")) rest) ", ") ")"))
 
 (define (js//escape-string x)
-	(pretty-print x))
+	(string-append "\"" x "\""))
 
 (define (js//infix-operator symbol xs)
 	(string-join
@@ -25,6 +25,15 @@
 (define (js/&& xs) (js//infix-operator "&&" xs))
 (define (js/|| xs) (js//infix-operator "||" xs))
 (define (js/** xs) (js//infix-operator "**" xs))
+(define (js/> xs) (js//infix-operator ">" xs))
+(define (js/< xs) (js//infix-operator "<" xs))
+(define (js/<= xs) (js//infix-operator "<==" xs))
+(define (js/>= xs) (js//infix-operator ">==" xs))
+(define (js/= xs) (js//infix-operator "===" xs))
+(define (js/!= xs) (js//infix-operator "!==" xs))
+(define (js/! xs) (string-append "!(" (serialise (car x) "js") ")"))
+(define (js/like xs) (js//infix-operator "==" xs))
+(define (js/unlike xs) (js//infix-operator "!=" xs))
 
 (define (js//define-variable type name body)
 	(string-join
@@ -34,12 +43,23 @@
 			"="
 			(serialise body "js"))))
 
+(define (js//define-function name args body)
+	(string-append
+		"function "
+		(symbol->string name)
+		" ("
+		(string-join (map symbol->string args) ", ")
+		") "
+		"{\n"
+		(string-join (map (lambda (x) (serialise x "js")) (js//maybe-add-return body)) "\n")
+		"\n}"))
+
 (define (js/define xs)
 	(let
 		((first (car xs))
 		(rest (cdr xs)))
 	(if (list? first)
-		(js//define-function first rest)
+		(js//define-function (car first) (cdr first) rest)
 		(js//define-variable "var" first (car rest)))))
 
 (define (js/const xs)
