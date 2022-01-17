@@ -1,49 +1,21 @@
 (use-modules (ice-9 ftw))
 
-(define-macro (push x xs)
-	`(set! ,xs (cons ,x ,xs)))
+(define-macro (push x xs) `(set! ,xs (cons ,x ,xs)))
 
-(define-macro (each x xs . body)
-	`(let ((head ,xs))
-	(while (not (null? head))
-		(let ((,x (car head)))
-		,@body
-		(set! head (cdr head))))))
+(define-macro (eif cond then else) `(if (null? ,cond) ,else ,then))
 
-(define (intersperse s xs)
-	(let ((r (cons (car xs) '())))
-	(each x (cdr xs)
-		(push s r)
-		(push x r))
-	(reverse r)))
+(define-macro (ewhen cond . then) `(if (null? ,cond) '() (begin ,@then)))
 
-(define (main args)
-	(define lang #f)
-	(define file #f)
-	(define lines '())
-	(let ((head args))
-		(while (not (null? head))
-			(cond
-				((string= (car head) "-lang")
-					(set! lang (car (cdr head)))
-					(set! head (cddr head)))
-				(#t
-					(set! file (car head))
-					(set! head (cdr head))))))
-	(set! lines (file-lines file))
-	(load (string-append "./lang/" lang ".scm"))
-	(for-each (lambda (x) (display x) (newline))
-		(map (lambda (x) (serialise x lang)) lines)))
+(define-macro (ewhile cond . body) `(while (not (null? ,cond)) ,@body))
 
-(define (file-lines path)
-	(let*
-		((file (open-input-file path))
-		(line (read file))
-		(lines '()))
-	(while (not (eof-object? line))
-		(push line lines)
-		(set! line (read file)))
-	(reverse lines)))
+(define-macro (pop x) `(ewhen ,x (let ((head (car ,x)) (tail (cdr ,x))) (set! ,x tail) head)))
+
+(define (intersperse s x)
+	(ewhen x (let ((head (car x)) (tail (cdr x)))
+		(cons head (ewhen tail (cons s (intersperse s tail)))))))
+
+(define (lang-proc lang name)
+	(string->symbol (string-append lang "/" name)))
 
 (define (serialise x lang)
 	(cond
@@ -51,9 +23,6 @@
 		((symbol? x) (symbol->string x))
 		((number? x) (number->string x))
 		((string? x) (primitive-eval (list (lang-proc lang "/escape-string") x)))))
-
-(define (lang-proc lang name)
-	(string->symbol (string-append lang "/" name)))
 
 (define (serialise-list x lang)
 	(let
@@ -69,5 +38,24 @@
 		(#t
 			(primitive-eval
 				`(,(lang-proc lang "/call-user-function") (quote ,x)))))))
+
+(define (file-lines file)
+	(let ((line (read file)))
+	(if (eof-object? line)
+		'()
+		(cons line (file-lines file)))))
+
+(define (main args)
+	(define lang #f)
+	(define file #f)
+	(ewhile args
+		(let ((x (pop args)))
+		(cond
+			((string= x "-lang") (set! lang (pop args)))
+			(#t (set! file x)))))
+	(load (string-append "./lang/" lang ".scm"))
+	(for-each
+		(lambda (x) (display (serialise x lang)) (newline))
+		(file-lines (open-input-file file))))
 
 (main (cdr (command-line)))
