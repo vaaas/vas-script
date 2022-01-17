@@ -14,8 +14,10 @@
 		(let ((x (pop xs)))
 		(cond
 			((symbol? x) (push (cons (symbol->string x) (pop xs)) attrs))
-			((list? x) (push (serialise x) children))
+			((list? x) (push (serialise x "html") children))
 			((string? x) (push x children)))))
+	(set! attrs (reverse attrs))
+	(set! children (reverse children))
 	(push "<" tokens)
 	(push name tokens)
 	(ewhile attrs
