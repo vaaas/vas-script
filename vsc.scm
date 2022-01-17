@@ -17,12 +17,17 @@
 (define (lang-proc lang name)
 	(string->symbol (string-append lang "/" name)))
 
+(define (lang-eval lang fname . args)
+	(primitive-eval (append
+		(list (lang-proc lang fname))
+		(map (lambda (x) (list 'quote x)) args))))
+
 (define (serialise x lang)
 	(cond
 		((list? x) (serialise-list x lang))
 		((symbol? x) (symbol->string x))
 		((number? x) (number->string x))
-		((string? x) (primitive-eval (list (lang-proc lang "/escape-string") x)))))
+		((string? x) (lang-eval lang "/escape-string" x))))
 
 (define (serialise-list x lang)
 	(let
@@ -30,14 +35,11 @@
 		(rest (cdr x)))
 	(cond
 		((list? first)
-			(primitive-eval
-				`(,(lang-proc lang "/nested") (quote ,first) (quote ,rest))))
+			(lang-eval lang "/nested" first rest))
 		((defined? (lang-proc lang (symbol->string first)))
-			(primitive-eval
-				`(,(lang-proc lang (symbol->string first)) (quote ,rest))))
+			(lang-eval lang (symbol->string first) rest))
 		(#t
-			(primitive-eval
-				`(,(lang-proc lang "/call-user-function") (quote ,x)))))))
+			(lang-eval lang "/call-user-function" x)))))
 
 (define (file-lines file)
 	(let ((line (read file)))
