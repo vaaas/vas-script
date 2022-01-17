@@ -8,7 +8,7 @@
 
 (define-macro (ewhile cond . body) `(while (not (null? ,cond)) ,@body))
 
-(define-macro (pop x) `(ewhen ,x (let ((head (car ,x)) (tail (cdr ,x))) (set! ,x tail) head)))
+(define-macro (pop x) `(ewhen ,x (let ((head (car ,x))) (set! ,x (cdr ,x)) head)))
 
 (define (intersperse s x)
 	(ewhen x (let ((head (car x)) (tail (cdr x)))
