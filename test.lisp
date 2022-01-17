@@ -1,4 +1,6 @@
 (console.log (+ 1 2 3))
+(macro (test_macro x) "yo")
+(test_macro 891374)
 ((if true console.log console.error) "swag")
 (define test "123")
 (const rest 1234)

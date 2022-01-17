@@ -87,12 +87,10 @@
 			"null")))
 
 (define (js//maybe-add-return xs)
-	(let ((last '())
-		(r '()))
-	(each x xs
-		(when (not (null? last))
-			(push r last))
-		(set! last x))
+	(let ((last '()) (r '()))
+	(for-each
+		(lambda (x) (ewhen last (push r last)) (set! last x))
+		xs)
 	(cond
 		((not (list? last)) (push (list 'return last) r))
 		((not (eq? 'return (car last))) (push (list 'return last) r))
