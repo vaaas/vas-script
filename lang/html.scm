@@ -1,15 +1,15 @@
 (define (html//escape-string x) (string-append "\"" x "\""))
 
-(define (html//nested x) "")
+(define (html//nested x) #f)
 
 (define (html/doctype _) "<!DOCTYPE html>")
 
 (define (html//call-user-function xs)
 	(let
 		((name (symbol->string (pop xs)))
-		(attrs '())
-		(children '())
-		(tokens '()))
+		(attrs nil)
+		(children nil)
+		(tokens nil))
 	(ewhile xs
 		(let ((x (pop xs)))
 		(cond

@@ -1,10 +1,10 @@
 (use-modules (ice-9 ftw))
 
+(define nil (list))
+
 (define-macro (push x xs) `(set! ,xs (cons ,x ,xs)))
 
-(define-macro (eif cond then else) `(if (null? ,cond) ,else ,then))
-
-(define-macro (ewhen cond . then) `(if (null? ,cond) '() (begin ,@then)))
+(define-macro (ewhen cond . then) `(if (null? ,cond) nil (begin ,@then)))
 
 (define-macro (ewhile cond . body) `(while (not (null? ,cond)) ,@body))
 
@@ -34,35 +34,36 @@
 		(body (cdr list)))
 	(primitive-eval `(define-macro (,safe-name ,@args) ,@body))))
 
-(define (user-macro? name) (defined? (user-macro name)))
-
-(define (user-macro-expand name args)
-	(primitive-eval (cons (user-macro name) (quote-all args))))
+(define (user-macro-expand x)
+	(if (list? x)
+		(let ((name (car x)) (args (cdr x)))
+		(if (and (symbol? name) (defined? (user-macro name)))
+			(primitive-eval (cons (user-macro name) (quote-all args)))
+			x))
+		x))
 
 (define (lang-proc? lang name) (defined? (lang-proc lang name)))
 
 (define (serialise x lang)
+	(let ((x (user-macro-expand x)))
 	(cond
 		((list? x) (serialise-list x lang))
 		((symbol? x) (symbol->string x))
 		((number? x) (number->string x))
-		((string? x) (lang-eval lang '/escape-string x))))
+		((string? x) (lang-eval lang '/escape-string x)))))
 
 (define (serialise-list x lang)
-	(let
-		((first (car x))
-		(rest (cdr x)))
+	(let ((first (car x)) (rest (cdr x)))
 	(cond
 		((list? first) (lang-eval lang '/nested first rest))
-		((eq? 'macro first) (add-user-macro rest) "")
-		((user-macro? first) (serialise (user-macro-expand first rest) lang))
+		((eq? 'macro first) (add-user-macro rest) #f)
 		((lang-proc? lang first) (lang-eval lang first rest))
 		(#t (lang-eval lang '/call-user-function x)))))
 
 (define (file-lines file)
 	(let ((line (read file)))
 	(if (eof-object? line)
-		'()
+		nil
 		(cons line (file-lines file)))))
 
 (define (main args)
@@ -75,7 +76,7 @@
 			(#t (set! file x)))))
 	(load (string-append "./lang/" lang ".scm"))
 	(for-each
-		(lambda (x) (display (serialise x lang)) (newline))
+		(lambda (x) (let ((y (serialise x lang))) (when y (display y) (newline))))
 		(file-lines (open-input-file file))))
 
 (main (cdr (command-line)))

@@ -87,7 +87,7 @@
 			"null")))
 
 (define (js//maybe-add-return xs)
-	(let ((last '()) (r '()))
+	(let ((last nil) (r nil))
 	(for-each
 		(lambda (x) (ewhen last (push r last)) (set! last x))
 		xs)
@@ -117,4 +117,4 @@
 			(serialise (car xs) "js"))))
 
 (define (js/progn xs)
-	(string-append "(" (js/lambda (append (list '()) xs)) ")()"))
+	(string-append "(" (js/lambda (append (list nil) xs)) ")()"))

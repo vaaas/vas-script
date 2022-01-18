@@ -3,9 +3,9 @@
 
 (define (vue//escape-string x) (string-append "\"" x "\""))
 
-(define (vue//nested x) "")
+(define (vue//nested x) #f)
 
-(define (vue//call-user-function x) "")
+(define (vue//call-user-function x) #f)
 
 (define (vue/template x)
 	(string-append
