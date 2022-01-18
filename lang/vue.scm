@@ -1,5 +1,6 @@
 (load (string-append "js" ".scm"))
 (load (string-append "html" ".scm"))
+(load (string-append "css" ".scm"))
 
 (define (vue//escape-string x) (string-append "\"" x "\""))
 
@@ -11,20 +12,22 @@
 	(string-append
 		"<template>"
 		(string-join
-			(map (lambda (x) (serialise x "html")) x)
+			(map (partial serialise "html") x)
 			"\n")
 		"</template>"))
 
 (define (vue/style x)
 	(string-append
 		"<style>"
-		(string-join x "\n")
+		(string-join
+            (map (partial serialise "css") x)
+            "\n")
 		"</style>"))
 
 (define (vue/script x)
 	(string-append
 		"<script>"
 		(string-join
-			(map (lambda (x) (serialise x "js")) x)
+			(map (partial serialise "js") x)
 			"\n")
 		"</script>"))

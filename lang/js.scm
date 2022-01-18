@@ -3,14 +3,14 @@
 		((name (car xs))
 		(args (cdr xs)))
 	(string-append
-		(string-append (serialise name "js") "(")
-		(string-join (map (lambda (x) (serialise x "js")) args) ", ")
+		(string-append (serialise "js" name) "(")
+		(string-join (map (partial serialise "js") args) ", ")
 		")")))
 
 (define (js//nested first rest)
 	(string-append
 		"(" first ")"
-		"(" (string-join (map (lambda (x) (serialise x "js")) rest) ", ") ")"))
+		"(" (string-join (map (partial serialise "js") rest) ", ") ")"))
 
 (define (js//escape-string x)
 	(string-append "\"" x "\""))
@@ -18,7 +18,7 @@
 (define (js//infix-operator symbol xs)
 	(string-join
 	(intersperse symbol
-	(map (lambda (x) (serialise x "js")) xs))))
+	(map (partial serialise "js") xs))))
 
 (define (js/+ xs) (js//infix-operator "+" xs))
 (define (js/- xs) (js//infix-operator "-" xs))
@@ -31,7 +31,7 @@
 (define (js/>= xs) (js//infix-operator ">==" xs))
 (define (js/= xs) (js//infix-operator "===" xs))
 (define (js/!= xs) (js//infix-operator "!==" xs))
-(define (js/! xs) (string-append "!(" (serialise (car x) "js") ")"))
+(define (js/! xs) (string-append "!(" (serialise "js" (car x)) ")"))
 (define (js/like xs) (js//infix-operator "==" xs))
 (define (js/unlike xs) (js//infix-operator "!=" xs))
 
@@ -41,7 +41,7 @@
 			type
 			(symbol->string name)
 			"="
-			(serialise body "js"))))
+			(serialise "js" body))))
 
 (define (js//define-function name args body)
 	(string-append
@@ -51,7 +51,7 @@
 		(string-join (map symbol->string args) ", ")
 		") "
 		"{\n"
-		(string-join (map (lambda (x) (serialise x "js")) (js//maybe-add-return body)) "\n")
+		(string-join (map (partial serialise "js") (js//maybe-add-return body)) "\n")
 		"\n}"))
 
 (define (js/define xs)
@@ -71,18 +71,18 @@
 (define (js/if xs)
 	(string-join
 		(list
-			(serialise (car xs) "js")
+			(serialise "js" (car xs))
 			"?"
-			(serialise (cadr xs) "js")
+			(serialise "js" (cadr xs))
 			":"
-			(serialise (caddr xs) "js"))))
+			(serialise "js" (caddr xs)))))
 
 (define (js/when xs)
 	(string-join
 		(list
-			(serialise (car xs) "js")
+			(serialise "js" (car xs))
 			"?"
-			(serialise (cadr xs) "js")
+			(serialise "js" (cadr xs))
 			":"
 			"null")))
 
@@ -104,9 +104,9 @@
 	(string-join
 		(list
 			"function("
-			(string-join (map (lambda (x) (serialise x "js")) args) ", ")
+			(string-join (map (partial serialise "js") args) ", ")
 			") { "
-			(string-join (map (lambda (x) (serialise x "js")) (js//maybe-add-return body)) "\n")
+			(string-join (map (partial serialise "js") (js//maybe-add-return body)) "\n")
 			" }")
 		"")))
 
@@ -114,7 +114,7 @@
 	(string-join
 		(list
 			"return"
-			(serialise (car xs) "js"))))
+			(serialise "js" (car xs)))))
 
 (define (js/progn xs)
 	(string-append "(" (js/lambda (append (list nil) xs)) ")()"))

@@ -8,6 +8,8 @@
 
 (define-macro (pop x) `(ewhen ,x (let ((head (car ,x))) (set! ,x (cdr ,x)) head)))
 
+(define-macro (partial f . args) `(lambda (X) (,f ,@args X)))
+
 (define (quote-all x) (map (lambda (x) (list 'quote x)) x))
 
 (define (intersperse s x)
@@ -42,18 +44,18 @@
 
 (define (lang-proc? lang name) (defined? (lang-proc lang name)))
 
-(define (serialise x lang)
+(define (serialise lang x)
 	(let ((x (user-macro-expand x)))
 	(cond
-		((list? x) (serialise-list x lang))
+		((list? x) (serialise-list lang x))
 		((symbol? x) (symbol->string x))
 		((number? x) (number->string x))
 		((string? x) (lang-eval lang '/escape-string x)))))
 
-(define (serialise-list x lang)
+(define (serialise-list lang x)
 	(let ((first (car x)) (rest (cdr x)))
 	(cond
-		((list? first) (lang-eval lang '/nested (serialise-list first lang) rest))
+		((list? first) (lang-eval lang '/nested (serialise-list lang first) rest))
 		((eq? 'macro first) (add-user-macro rest) #f)
 		((lang-proc? lang first) (lang-eval lang first rest))
 		(#t (lang-eval lang '/call-user-function x)))))
@@ -74,7 +76,7 @@
 			(#t (set! file x)))))
 	(load (string-append "./lang/" lang ".scm"))
 	(for-each
-		(lambda (x) (let ((y (serialise x lang))) (when y (display y) (newline))))
+		(lambda (x) (let ((y (serialise lang x))) (when y (display y) (newline))))
 		(file-lines (open-input-file file))))
 
 (main (cdr (command-line)))
