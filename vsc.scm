@@ -1,5 +1,3 @@
-(use-modules (ice-9 ftw))
-
 (define nil (list))
 
 (define-macro (push x xs) `(set! ,xs (cons ,x ,xs)))
@@ -55,7 +53,7 @@
 (define (serialise-list x lang)
 	(let ((first (car x)) (rest (cdr x)))
 	(cond
-		((list? first) (lang-eval lang '/nested first rest))
+		((list? first) (lang-eval lang '/nested (serialise-list first lang) rest))
 		((eq? 'macro first) (add-user-macro rest) #f)
 		((lang-proc? lang first) (lang-eval lang first rest))
 		(#t (lang-eval lang '/call-user-function x)))))

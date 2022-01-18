@@ -9,7 +9,7 @@
 
 (define (js//nested first rest)
 	(string-append
-		"(" (serialise first "js") ")"
+		"(" first ")"
 		"(" (string-join (map (lambda (x) (serialise x "js")) rest) ", ") ")"))
 
 (define (js//escape-string x)
