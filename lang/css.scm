@@ -8,7 +8,7 @@
 	(if (null? x)
 		x
 		(cons
-			(cons (car x) (cadr x))
+			(cons (user-macro-expand (car x)) (user-macro-expand (cadr x)))
 			(css//declarations->alist (cddr x)))))
 
 (define (css/rule x)
