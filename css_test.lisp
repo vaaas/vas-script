@@ -1,4 +1,5 @@
-(macro (red) '((px 15) (px 0) (px 15) (px 0)))
+(macro (test x) '((px 16) (px 14)))
 
 (rule (c html body header (> h1 h2 h3))
-    margin ((red)))
+	margin (px 14))
+	;; margin ((macro-test)))

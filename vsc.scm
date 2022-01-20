@@ -32,13 +32,13 @@
 		(safe-name (user-macro name))
 		(args (cdr head))
 		(body (cdr list)))
-	(primitive-eval `(define-macro (,safe-name ,@args) ,@body))))
+	(primitive-eval `(define (,safe-name ,@args) ,@body))))
 
 (define (user-macro-expand x)
 	(if (list? x)
 		(let ((name (car x)) (args (cdr x)))
 		(if (and (symbol? name) (defined? (user-macro name)))
-			(primitive-eval (cons (user-macro name) (quote-all args)))
+			(primitive-eval (cons (user-macro name) args))
 			x))
 		x))
 
