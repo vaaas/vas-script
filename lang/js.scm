@@ -20,6 +20,10 @@
 	(intersperse symbol
 	(map (partial serialise "js") xs))))
 
+(define (js//parens x) (string-append "(" x ")"))
+(define (js//brackets x) (string-append "[" x "]"))
+(define (js//braces x) (string-append "{" x "}"))
+
 (define (js/+ xs) (js//infix-operator "+" xs))
 (define (js/- xs) (js//infix-operator "-" xs))
 (define (js/&& xs) (js//infix-operator "&&" xs))
@@ -31,9 +35,10 @@
 (define (js/>= xs) (js//infix-operator ">==" xs))
 (define (js/= xs) (js//infix-operator "===" xs))
 (define (js/!= xs) (js//infix-operator "!==" xs))
-(define (js/! xs) (string-append "!(" (serialise "js" (car x)) ")"))
+(define (js/! xs) (string-append "!(" (serialise "js" (car xs)) ")"))
 (define (js/like xs) (js//infix-operator "==" xs))
 (define (js/unlike xs) (js//infix-operator "!=" xs))
+(define (js/set xs) (js//infix-operator "=" xs))
 
 (define (js//define-variable type name body)
 	(string-join
@@ -117,4 +122,13 @@
 			(serialise "js" (car xs)))))
 
 (define (js/progn xs)
-	(string-append "(" (js/lambda (append (list nil) xs)) ")()"))
+	(string-append (js//parens (js/lambda (append (list nil) xs))) "()"))
+
+(define (js/.. xs)
+	(string-join (map (partial serialise "js") xs) "."))
+
+(define (js/get xs)
+	(string-join (map (lambda (x) (js//brackets (serialise "js" x))) xs) ""))
+
+(define (js/array xs)
+	(js//brackets (string-join (map (partial serialise "js") xs) ", ")))

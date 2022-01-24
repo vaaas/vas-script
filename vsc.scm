@@ -1,3 +1,7 @@
+(use-modules
+	(srfi srfi-1)
+	(ice-9 receive))
+
 (define nil (list))
 
 (define-macro (push x xs) `(set! ,xs (cons ,x ,xs)))

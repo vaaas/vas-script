@@ -16,3 +16,4 @@
 	(console.log "nay"))
 (define (main a b c)
 	(console.log a b c))
+(set (.. document body (getFirstElementChild 1 2 3)) (array 1 2 3))
