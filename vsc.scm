@@ -10,6 +10,14 @@
 
 (define-macro (partial f . args) `(lambda (X) (,f ,@args X)))
 
+(define-macro (-> x . fs)
+	(define (help x fs)
+		(if (null? fs) x
+			(help
+				(if (list? (car fs)) (append (car fs) (list x)) (list (car fs) x))
+				(cdr fs))))
+	(help x fs))
+
 (define (load-lang x) (load-from-path (string-append "vas-script" "/lang/" x ".scm")))
 
 (define (quote-all x) (map (lambda (x) (list 'quote x)) x))

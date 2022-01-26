@@ -76,13 +76,11 @@
 			(serialise "js" (caddr xs)))))
 
 (define (js/when xs)
-	(string-join
-		(list
-			(serialise "js" (car xs))
-			"?"
-			(serialise "js" (cadr xs))
-			":"
-			"null")))
+	(string-append
+		(serialise "js" (car xs))
+		"?"
+		(serialise "js" (cadr xs))
+		": null"))
 
 (define (js//maybe-add-return x)
 	(let ((x (car x)) (xs (cdr x)))
