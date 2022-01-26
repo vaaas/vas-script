@@ -14,6 +14,8 @@
 
 (define-macro (partial f . args) `(lambda (X) (,f ,@args X)))
 
+(define (load-lang x) (load-from-path (string-append "vas-script" "/lang/" x ".scm")))
+
 (define (quote-all x) (map (lambda (x) (list 'quote x)) x))
 
 (define (intersperse s x)
@@ -78,7 +80,7 @@
 		(cond
 			((string= x "-lang") (set! lang (pop args)))
 			(#t (set! file x)))))
-	(load (string-append "./lang/" lang ".scm"))
+	(load-lang lang)
 	(for-each
 		(lambda (x) (let ((y (serialise lang x))) (when y (display y) (newline))))
 		(file-lines (open-input-file file))))

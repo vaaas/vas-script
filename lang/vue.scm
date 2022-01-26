@@ -1,6 +1,6 @@
-(load (string-append "js" ".scm"))
-(load (string-append "html" ".scm"))
-(load (string-append "css" ".scm"))
+(load-lang "js")
+(load-lang "html")
+(load-lang "css")
 
 (define (vue//escape-string x) (string-append "\"" x "\""))
 

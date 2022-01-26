@@ -2,15 +2,12 @@
 	(let
 		((name (car xs))
 		(args (cdr xs)))
-	(string-append
-		(string-append (serialise "js" name) "(")
-		(string-join (map (partial serialise "js") args) ", ")
-		")")))
+	(string-append (serialise "js" name) (js//serialise-args args))))
 
 (define (js//nested first rest)
 	(string-append
-		"(" first ")"
-		"(" (string-join (map (partial serialise "js") rest) ", ") ")"))
+		(js//parens first)
+		(js//serialise-args rest)))
 
 (define (js//escape-string x)
 	(string-append "\"" x "\""))
@@ -35,10 +32,13 @@
 (define (js/>= xs) (js//infix-operator ">==" xs))
 (define (js/= xs) (js//infix-operator "===" xs))
 (define (js/!= xs) (js//infix-operator "!==" xs))
-(define (js/! xs) (string-append "!(" (serialise "js" (car xs)) ")"))
+(define (js/! xs) (string-append "!" (js//parens (serialise "js" (car xs)))))
 (define (js/like xs) (js//infix-operator "==" xs))
 (define (js/unlike xs) (js//infix-operator "!=" xs))
 (define (js/set xs) (js//infix-operator "=" xs))
+
+(define (js//serialise-args xs)
+	(js//parens (string-join (map (partial serialise "js") args) ", ")))
 
 (define (js//define-variable type name body)
 	(string-join
@@ -52,12 +52,11 @@
 	(string-append
 		"function "
 		(symbol->string name)
-		" ("
-		(string-join (map symbol->string args) ", ")
-		") "
-		"{\n"
-		(string-join (map (partial serialise "js") (js//maybe-add-return body)) "\n")
-		"\n}"))
+		" "
+		(js//serialise-args args)
+		" "
+		(js//braces
+			(string-join (map (partial serialise "js") (js//maybe-add-return body)) "\n"))))
 
 (define (js/define xs)
 	(let
@@ -106,20 +105,14 @@
 	(let
 		((args (car xs))
 		(body (cdr xs)))
-	(string-join
-		(list
-			"function("
-			(string-join (map (partial serialise "js") args) ", ")
-			") { "
-			(string-join (map (partial serialise "js") (js//maybe-add-return body)) "\n")
-			" }")
-		"")))
+	(string-append
+		"function"
+		(js//serialise-args args)
+		(js//braces
+			(string-join (map (partial serialise "js") (js//maybe-add-return body)) "\n")))))
 
 (define (js/return xs)
-	(string-join
-		(list
-			"return"
-			(serialise "js" (car xs)))))
+	(string-append "return " (serialise "js" (car xs))))
 
 (define (js/progn xs)
 	(string-append (js//parens (js/lambda (append (list nil) xs))) "()"))
