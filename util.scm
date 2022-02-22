@@ -40,6 +40,13 @@
 				(cdr fs))))
 	(help x fs))
 
+(define-macro (C . xs)
+	(define (help x)
+		(if (= 3 (length x))
+			(list (car x) (caddr x) (cadr x))
+			(list (car x) (help (cdr x)))))
+	(if (< (length xs) 3) xs) (help xs))
+
 (define (intersperse s x)
 	(ewhen x (let ((head (car x)) (tail (cdr x)))
 		(cons head (ewhen tail (cons s (intersperse s tail)))))))
