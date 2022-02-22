@@ -1,6 +1,5 @@
 (define-module (vas-script lang js)
 	#:export (
-		yoloswag
 		/call-user-function
 		/nested-function
 		/escape-string
