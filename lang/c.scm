@@ -9,7 +9,7 @@
 
 ;private
 (use-modules (vas-script util))
-(use-modules ((vas-script compiler) #:select serialise))
+(use-modules ((vas-script compiler) #:select (serialise)))
 
 (define (type x)
 	(string-join

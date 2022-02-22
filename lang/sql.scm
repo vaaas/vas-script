@@ -19,7 +19,7 @@
 		/as))
 
 (use-modules (vas-script util))
-(use-modules ((vas-script compiler) #:select serialise))
+(use-modules ((vas-script compiler) #:select (serialise)))
 
 (define (/escape-string x) (string-append "'" x "'"))
 

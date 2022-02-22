@@ -29,7 +29,7 @@
 ))
 
 (use-modules (vas-script util))
-(use-modules ((vas-script compiler) #:select serialise))
+(use-modules ((vas-script compiler) #:select (serialise)))
 
 ; private functions
 (define (declarations->alist x)

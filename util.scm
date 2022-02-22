@@ -1,5 +1,6 @@
 (define-module (vas-script util)
 	#:export (
+		load-lang
 		nil
 		push
 		ewhen
@@ -8,7 +9,6 @@
 		partial
 		->
 		intersperse
-		load-lang
 		parens
 		brackets
 		braces
@@ -16,6 +16,9 @@
 		infix))
 
 (use-modules ((vas-script compiler) #:select (serialise)))
+
+(define (load-lang x)
+	(module-use! (current-module) (resolve-interface (list 'vas-script 'lang x) #:prefix x)))
 
 (define nil (list))
 
