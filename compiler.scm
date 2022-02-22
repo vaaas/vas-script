@@ -1,39 +1,26 @@
-(define nil (list))
+(define-module (vas-script compiler)
+	#:export (
+		load-lang
+		lang-proc?
+		lang-eval
+		user-macro
+		add-user-macro
+		user-macro-expand
+		serialise
+		serialise-list
+		file-lines))
 
-(define-macro (push x xs) `(set! ,xs (cons ,x ,xs)))
+(use-modules (vas-script util))
 
-(define-macro (ewhen cond . then) `(if (null? ,cond) nil (begin ,@then)))
+(define (load-lang x)
+	(module-use! (current-module) (resolve-interface (list 'vas-script 'lang x) #:prefix x)))
 
-(define-macro (ewhile cond . body) `(while (not (null? ,cond)) ,@body))
-
-(define-macro (pop x) `(ewhen ,x (let ((head (car ,x))) (set! ,x (cdr ,x)) head)))
-
-(define-macro (partial f . args) `(lambda (X) (,f ,@args X)))
-
-(define-macro (-> x . fs)
-	(define (help x fs)
-		(if (null? fs) x
-			(help
-				(if (list? (car fs)) (append (car fs) (list x)) (list (car fs) x))
-				(cdr fs))))
-	(help x fs))
-
-(define (load-lang x) (load-from-path (string-append "vas-script" "/lang/" x ".scm")))
-
-(define (quote-all x) (map (lambda (x) (list 'quote x)) x))
-
-(define (intersperse s x)
-	(ewhen x (let ((head (car x)) (tail (cdr x)))
-		(cons head (ewhen tail (cons s (intersperse s tail)))))))
-
-(define (lang-proc lang name)
-	(string->symbol (string-append lang "/" (symbol->string name))))
+(define (lang-proc? lang name) (defined? (symbol-append lang name)))
 
 (define (lang-eval lang fname . args)
-	(primitive-eval (cons (lang-proc lang fname) (quote-all args))))
+	(primitive-eval (cons (symbol-append lang fname) (map (lambda (x) (list 'quote x)) args))))
 
-(define (user-macro name)
-	(string->symbol (string-append "macro//" (symbol->string name))))
+(define (user-macro name) (symbol-append 'macro// name))
 
 (define (add-user-macro list)
 	(let*
@@ -52,8 +39,6 @@
 			x))
 		x))
 
-(define (lang-proc? lang name) (defined? (lang-proc lang name)))
-
 (define (serialise lang x)
 	(let ((x (user-macro-expand x)))
 	(cond
@@ -65,7 +50,7 @@
 (define (serialise-list lang x)
 	(let ((first (car x)) (rest (cdr x)))
 	(cond
-		((list? first) (lang-eval lang '/nested (serialise-list lang first) rest))
+		((list? first) (lang-eval lang '/nested-function (serialise-list lang first) rest))
 		((eq? 'macro first) (add-user-macro rest) #f)
 		((lang-proc? lang first) (lang-eval lang first rest))
 		(#t (lang-eval lang '/call-user-function x)))))
@@ -82,7 +67,7 @@
 	(ewhile args
 		(let ((x (pop args)))
 		(cond
-			((string= x "-lang") (set! lang (pop args)))
+			((string= x "-lang") (set! lang (string->symbol (pop args))))
 			(#t (set! file x)))))
 	(load-lang lang)
 	(for-each

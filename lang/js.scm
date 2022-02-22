@@ -1,117 +1,149 @@
-(define (js//call-user-function xs)
-	(let ((name (car xs)) (args (cdr xs)))
-	(string-append (serialise "js" name) (js//serialise-args args))))
+(define-module (vas-script lang js)
+	#:export (
+		yoloswag
+		/call-user-function
+		/nested-function
+		/escape-string
+		/+
+		/-
+		/&&
+		/||
+		/>
+		/<
+		/<=
+		/>=
+		/=
+		/!=
+		/!
+		/like
+		/unlike
+		/set
+		/def
+		/const
+		/let
+		/if
+		/when
+		/lambda
+		/return
+		/progn
+		/..
+		/get
+		/array))
 
-(define (js//nested first rest)
-	(string-append
-		(js//parens first)
-		(js//serialise-args rest)))
+(use-modules (vas-script util))
+(use-modules ((vas-script compiler) #:select (serialise)))
 
-(define (js//escape-string x)
-	(string-append "\"" x "\""))
+; private bindings
+(define (serialise-args x)
+	(parens (string-join (map (partial serialise 'js) x) ", ")))
 
-(define (js//infix-operator symbol xs)
+(define (infix symbol xs)
 	(string-join
 	(intersperse symbol
-	(map (partial serialise "js") xs))))
+	(map (partial serialise 'js) xs))))
 
-(define (js//parens x) (string-append "(" x ")"))
-(define (js//brackets x) (string-append "[" x "]"))
-(define (js//braces x) (string-append "{" x "}"))
-(define (js//newlines x) (string-append "\n" x "\n"))
+(define (define-variable type name body)
+	(string-append type " " (serialise 'js name) " = " (serialise 'js body)))
 
-(define (js/+ xs) (js//infix-operator "+" xs))
-(define (js/- xs) (js//infix-operator "-" xs))
-(define (js/&& xs) (js//infix-operator "&&" xs))
-(define (js/|| xs) (js//infix-operator "||" xs))
-(define (js/** xs) (js//infix-operator "**" xs))
-(define (js/> xs) (js//infix-operator ">" xs))
-(define (js/< xs) (js//infix-operator "<" xs))
-(define (js/<= xs) (js//infix-operator "<==" xs))
-(define (js/>= xs) (js//infix-operator ">==" xs))
-(define (js/= xs) (js//infix-operator "===" xs))
-(define (js/!= xs) (js//infix-operator "!==" xs))
-(define (js/! xs) (string-append "!" (js//parens (serialise "js" (car xs)))))
-(define (js/like xs) (js//infix-operator "==" xs))
-(define (js/unlike xs) (js//infix-operator "!=" xs))
-(define (js/set xs) (js//infix-operator "=" xs))
-
-(define (js//serialise-args x)
-	(js//parens (string-join (map (partial serialise "js") x) ", ")))
-
-(define (js//define-variable type name body)
-	(string-append type " " (serialise "js" name) " = " (serialise "js" body)))
-
-(define (js//define-function name args body)
+(define (define-function name args body)
 	(string-append
 		"function "
 		(symbol->string name)
-		(js//serialise-args args)
+		(serialise-args args)
 		" "
-		(js//braces
-			(js//newlines
-			(string-join (map (partial serialise "js") (js//maybe-add-return body)) "\n")))))
+		(braces
+			(newlines
+			(string-join (map (partial serialise 'js) (maybe-add-return body)) "\n")))))
 
-(define (js/define xs)
+(define (maybe-add-return x)
+	(let ((x (car x)) (xs (cdr x)))
+	(cond
+		((not (null? xs)) (cons x (maybe-add-return xs)))
+		((or (not (list? x)) (not (eq? 'return (car x)))) (list (list 'return x)))
+		(#t x))))
+
+; public bindings
+(define (/call-user-function xs)
+	(let ((name (car xs)) (args (cdr xs)))
+	(string-append (serialise 'js name) (serialise-args args))))
+
+(define (/nested-function first rest)
+	(string-append
+		(parens first)
+		(serialise-args rest)))
+
+(define (/escape-string x)
+	(string-append "\"" x "\""))
+
+(define (/+ xs) (infix "+" xs))
+(define (/- xs) (infix "-" xs))
+(define (/&& xs) (infix "&&" xs))
+(define (/|| xs) (infix "||" xs))
+(define (/** xs) (infix "**" xs))
+(define (/> xs) (infix ">" xs))
+(define (/< xs) (infix "<" xs))
+(define (/<= xs) (infix "<==" xs))
+(define (/>= xs) (infix ">==" xs))
+(define (/= xs) (infix "===" xs))
+(define (/!= xs) (infix "!==" xs))
+(define (/! xs) (string-append "!" (parens (serialise 'js (car xs)))))
+(define (/like xs) (infix "==" xs))
+(define (/unlike xs) (infix "!=" xs))
+(define (/set xs) (infix "=" xs))
+
+(define (/define xs)
 	(let
 		((first (car xs))
 		(rest (cdr xs)))
 	(if (list? first)
-		(js//define-function (car first) (cdr first) rest)
-		(js//define-variable "var" first (car rest)))))
+		(define-function (car first) (cdr first) rest)
+		(define-variable "var" first (car rest)))))
 
-(define (js/const xs)
-	(js//define-variable "const" (car xs) (cadr xs)))
+(define (/const xs)
+	(define-variable "const" (car xs) (cadr xs)))
 
-(define (js/let xs)
-	(js//define-variable "let" (car xs) (cadr xs)))
+(define (/let xs)
+	(define-variable "let" (car xs) (cadr xs)))
 
-(define (js/if xs)
+(define (/if xs)
 	(string-join
 		(list
-			(serialise "js" (car xs))
+			(serialise 'js (car xs))
 			"?"
-			(serialise "js" (cadr xs))
+			(serialise 'js (cadr xs))
 			":"
-			(serialise "js" (caddr xs)))))
+			(serialise 'js (caddr xs)))))
 
-(define (js/when xs)
+(define (/when xs)
 	(string-append
-		(serialise "js" (car xs))
+		(serialise 'js (car xs))
 		"?"
-		(serialise "js" (cadr xs))
+		(serialise 'js (cadr xs))
 		": null"))
 
-(define (js//maybe-add-return x)
-	(let ((x (car x)) (xs (cdr x)))
-	(cond
-		((not (null? xs)) (cons x (js//maybe-add-return xs)))
-		((or (not (list? x)) (not (eq? 'return (car x)))) (list (list 'return x)))
-		(#t x))))
-
-(define (js/lambda xs)
+(define (/lambda xs)
 	(let
 		((args (car xs))
 		(body (cdr xs)))
 	(string-append
 		"function"
-		(js//serialise-args args)
-		(js//braces
-			(js//newlines
+		(serialise-args args)
+		(braces
+			(newlines
 				(string-join
-					(map (partial serialise "js") (js//maybe-add-return body)) "\n"))))))
+					(map (partial serialise 'js) (maybe-add-return body)) "\n"))))))
 
-(define (js/return xs)
-	(string-append "return " (serialise "js" (car xs))))
+(define (/return xs)
+	(string-append "return " (serialise 'js (car xs))))
 
-(define (js/progn xs)
-	(string-append (js//parens (js/lambda (append (list nil) xs))) "()"))
+(define (/progn xs)
+	(string-append (parens (js/lambda (append (list nil) xs))) "()"))
 
-(define (js/.. xs)
-	(string-join (map (partial serialise "js") xs) "."))
+(define (/.. xs)
+	(string-join (map (partial serialise 'js) xs) "."))
 
-(define (js/get xs)
-	(string-join (map (lambda (x) (js//brackets (serialise "js" x))) xs) ""))
+(define (/get xs)
+	(string-join (map (lambda (x) (brackets (serialise 'js x))) xs) ""))
 
-(define (js/array xs)
-	(js//brackets (string-join (map (partial serialise "js") xs) ", ")))
+(define (/array xs)
+	(brackets (string-join (map (partial serialise 'js) xs) ", ")))
