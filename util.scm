@@ -12,7 +12,10 @@
 		parens
 		brackets
 		braces
-		newlines))
+		newlines
+		infix))
+
+(use-modules ((vas-script compiler) #:select (serialise)))
 
 (define nil (list))
 
@@ -38,8 +41,8 @@
 	(ewhen x (let ((head (car x)) (tail (cdr x)))
 		(cons head (ewhen tail (cons s (intersperse s tail)))))))
 
-
 (define (parens x) (string-append "(" x ")"))
 (define (brackets x) (string-append "[" x "]"))
 (define (braces x) (string-append "{" x "}"))
 (define (newlines x) (string-append "\n" x "\n"))
+(define (infix lang i x) (string-join (map (partial serialise lang) x) i))

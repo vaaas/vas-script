@@ -1,42 +1,56 @@
-(define (c//call-user-function xs)
+(define-module (vas-script lang c)
+	#:export (
+		/call-user-function
+		/nested-function
+		/escape-string
+		/include
+		/define
+		/function))
+
+;private
+(use-modules (vas-script util))
+(use-modules ((vas-script compiler) #:select serialise))
+
+(define (type x)
+	(string-join
+		(map (lambda (x) (serialise 'c (if (eq? 'ptr x) '* x))) x)
+		" "))
+
+;public
+(define (/call-user-function xs)
 	(let
 		((name (car xs))
 		(args (cdr xs)))
 	(string-append
-		(string-append (serialise "js" name) "(")
-		(string-join (map (partial serialise "js") args) ", ")
+		(string-append (serialise 'c name) "(")
+		(string-join (map (partial serialise 'c) args) ", ")
 		")")))
 
-(define (c//nested first rest)
+(define (/nested-function first rest)
 	(string-append
 		"(" first ")"
-		"(" (string-join (map (partial serialise "js") rest) ", ") ")"))
+		"(" (string-join (map (partial serialise 'c) rest) ", ") ")"))
 
-(define (c//escape-string x)
+(define (/escape-string x)
 	(string-append "\"" x "\""))
 
-(define (c/include x)
-	(string-append "include " (serialise "c" (car x))))
+(define (/include x)
+	(string-append "include " (serialise 'c (car x))))
 
-(define (c//type x)
-	(string-join
-		(map (lambda (x) (serialise "c" (if (eq? 'ptr x) '* x))) x)
-		" "))
-
-(define (c/define x)
+(define (/define x)
 	(string-append
-		(c//type (car x))
+		(type (car x))
 		" "
-		(serialise "c" (cadr x))
+		(serialise 'c (cadr x))
 		" = "
-		(serialise "c" (caddr x))
+		(serialise 'c (caddr x))
 		";"))
 
-(define (c/function x)
+(define (/function x)
 	(string-append
-		(c//type (car x))
+		(type (car x))
 		" "
-		(serialise "c" (cadr x))
+		(serialise 'c (cadr x))
 		" ("
 		(c//function-args (caddr x))
 		") {"

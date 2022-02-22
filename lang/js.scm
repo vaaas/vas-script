@@ -36,11 +36,6 @@
 (define (serialise-args x)
 	(parens (string-join (map (partial serialise 'js) x) ", ")))
 
-(define (infix symbol xs)
-	(string-join
-	(intersperse symbol
-	(map (partial serialise 'js) xs))))
-
 (define (define-variable type name body)
 	(string-append type " " (serialise 'js name) " = " (serialise 'js body)))
 
@@ -74,21 +69,21 @@
 (define (/escape-string x)
 	(string-append "\"" x "\""))
 
-(define (/+ xs) (infix "+" xs))
-(define (/- xs) (infix "-" xs))
-(define (/&& xs) (infix "&&" xs))
-(define (/|| xs) (infix "||" xs))
-(define (/** xs) (infix "**" xs))
-(define (/> xs) (infix ">" xs))
-(define (/< xs) (infix "<" xs))
-(define (/<= xs) (infix "<==" xs))
-(define (/>= xs) (infix ">==" xs))
-(define (/= xs) (infix "===" xs))
-(define (/!= xs) (infix "!==" xs))
+(define (/+ xs) (infix 'js "+" xs))
+(define (/- xs) (infix 'js "-" xs))
+(define (/&& xs) (infix 'js "&&" xs))
+(define (/|| xs) (infix 'js "||" xs))
+(define (/** xs) (infix 'js "**" xs))
+(define (/> xs) (infix 'js ">" xs))
+(define (/< xs) (infix 'js "<" xs))
+(define (/<= xs) (infix 'js "<==" xs))
+(define (/>= xs) (infix 'js ">==" xs))
+(define (/= xs) (infix 'js "===" xs))
+(define (/!= xs) (infix 'js "!==" xs))
 (define (/! xs) (string-append "!" (parens (serialise 'js (car xs)))))
-(define (/like xs) (infix "==" xs))
-(define (/unlike xs) (infix "!=" xs))
-(define (/set xs) (infix "=" xs))
+(define (/like xs) (infix 'js "==" xs))
+(define (/unlike xs) (infix 'js "!=" xs))
+(define (/set xs) (infix 'js "=" xs))
 
 (define (/define xs)
 	(let

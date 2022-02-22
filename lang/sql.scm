@@ -1,49 +1,57 @@
-(define (sql//escape-string x) (string-append "'" x "'"))
+(define-module (vas-script lang sql)
+	#:export (
+		/call-user-function
+		/nested-function
+		/escape-string
+		/query
+		/select
+		/where
+		/or
+		/and
+		/=
+		/>=
+		/>
+		/<
+		/<=
+		/is
+		/isnt
+		/from
+		/as))
 
-(define (sql//nested x) #f)
+(use-modules (vas-script util))
+(use-modules ((vas-script compiler) #:select serialise))
 
-(define (sql//call-user-function xs)
+(define (/escape-string x) (string-append "'" x "'"))
+
+(define (/nested-function x) #f)
+
+(define (/call-user-function xs)
 	(let
 		((name (car xs))
 		(args (cdr xs)))
 	(string-append
-		(string-append (serialise "sql" name) "(")
-		(sql//infix ", " args)
+		(string-append (serialise 'sql name) "(")
+		(infix 'sql ", " args)
 		")")))
 
-(define (sql//infix i x)
-	(string-join (map (partial serialise "sql") x) i))
+(define (/query x) (infix 'sql "\n" x))
+(define (/select x) (string-append "select " (infix 'sql ", " x)))
+(define (/where x) (string-append "where " (infix 'sql " AND " x)))
+(define (/or x) (infix 'sql " OR " x))
+(define (/and x) (infix 'sql " AND " x))
+(define (/= x) (infix 'sql " = " x))
+(define (/>= x) (infix 'sql " >= " x))
+(define (/> x) (infix 'sql " > " x))
+(define (/< x) (infix 'sql " < " x))
+(define (/<= x) (infix 'sql " <= " x))
+(define (/!= x) (infix 'sql " != " x))
+(define (/is x) (infix 'sql " is " x))
+(define (/isnt x) (infix 'sql " is not " x))
 
-(define (sql/query x) (sql//infix "\n" x))
+(define (/from x) (string-append "from " (serialise 'sql (car x))))
 
-(define (sql/select x) (string-append "select " (sql//infix ", " x)))
-
-(define (sql/where x) (string-append "where " (sql//infix " AND " x)))
-
-(define (sql/or x) (sql//infix " OR " x))
-
-(define (sql/and x) (sql//infix " AND " x))
-
-(define (sql/= x) (sql//infix " = " x))
-
-(define (sql/>= x) (sql//infix " >= " x))
-
-(define (sql/> x) (sql//infix " > " x))
-
-(define (sql/< x) (sql//infix " < " x))
-
-(define (sql/<= x) (sql//infix " <= " x))
-
-(define (sql/!= x) (sql//infix " != " x))
-
-(define (sql/is x) (sql//infix " is " x))
-
-(define (sql/isnt x) (sql//infix " is not " x))
-
-(define (sql/from x) (string-append "from " (serialise "sql" (car x))))
-
-(define (sql/as x)
+(define (/as x)
 	(string-append
-		(serialise "sql" (cadr x))
+		(serialise 'sql (cadr x))
 		" as "
-		(serialise "sql" (car x))))
+		(serialise 'sql (car x))))
