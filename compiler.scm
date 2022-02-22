@@ -1,5 +1,5 @@
 (define-module (vas-script compiler)
-	#:export (serialise))
+	#:export (serialise user-macro-expand))
 
 ;public
 (define (serialise lang x)
@@ -11,6 +11,10 @@
 ;private
 (use-modules (vas-script util) (ice-9 regex))
 
+(define #{`}# 'quasiquote)
+(define #{,}# 'unquote)
+(define #{@}# 'unquote-splicing)
+
 (define (lang-proc? lang name) (defined? (symbol-append lang '/ name)))
 
 (define (lang-eval lang name . args)
@@ -18,14 +22,26 @@
 
 (define (user-macro name) (symbol-append 'macro// name))
 
-(define (add-user-macro list)
-	(let*
-		((head (car list))
-		(name (car head))
-		(safe-name (user-macro name))
-		(args (cdr head))
-		(body (cdr list)))
-	(primitive-eval `(define (,safe-name ,@args) ,@body))))
+(define (add-user-macro x)
+	(primitive-eval
+		`(define
+			(,(user-macro (caar x)) ,@(sane-user-args (cdar x)))
+			,@(sane-user-body (cdr x)))))
+
+(define (sane-user-args xs)
+	(cond
+		((null? xs) xs)
+		((eq? '. (car xs)) (cadr xs))
+		(#t (cons (car xs) (sane-user-args (cdr xs))))))
+
+(define (sane-user-body x)
+	(cond
+		((list? x) (map sane-user-body x))
+		((eq? x '#{'}#) 'quote)
+		((eq? x '#{`}#) 'quasiquote)
+		((eq? x '#{,}#) 'unquote)
+		((eq? x '#{@}#) 'unquote-splicing)
+		(#t x)))
 
 (define (user-macro-expand x)
 	(if (list? x)

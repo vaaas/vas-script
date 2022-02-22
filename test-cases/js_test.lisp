@@ -1,6 +1,6 @@
 (console.log (+ 1 2 3))
-;; (macro (test_macro x) `(console.log ,x))
-;; (test_macro 891374)
+(macro (test_macro . xs) (` (console.log (@ xs))))
+(test_macro "one" 1 "two" 2)
 ((if true console.log console.error) "swag")
 (define test "123")
 (const rest 1234)

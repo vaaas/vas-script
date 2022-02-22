@@ -1,3 +1,3 @@
 #!/bin/sh
 dir=$(realpath ..)
-GUILE_LOAD_PATH=$dir guile compiler.scm -lang $1 $2
+GUILE_LOAD_PATH=$dir guile vsc.scm -lang $1 $2

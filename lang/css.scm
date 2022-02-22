@@ -25,11 +25,9 @@
 		/or
 		/=
 		/not
-		/id
-))
+		/id))
 
-(use-modules (vas-script util))
-(use-modules ((vas-script compiler) #:select (serialise)))
+(use-modules (vas-script util) (vas-script compiler))
 
 ; private functions
 (define (declarations->alist x)
