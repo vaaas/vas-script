@@ -8,6 +8,7 @@
 		pop
 		partial
 		->
+		C
 		intersperse
 		parens
 		brackets
