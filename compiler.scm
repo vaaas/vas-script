@@ -15,10 +15,10 @@
 (define (load-lang x)
 	(module-use! (current-module) (resolve-interface (list 'vas-script 'lang x) #:prefix x)))
 
-(define (lang-proc? lang name) (defined? (symbol-append lang name)))
+(define (lang-proc? lang name) (defined? (symbol-append lang '/ name)))
 
-(define (lang-eval lang fname . args)
-	(primitive-eval (cons (symbol-append lang fname) (map (lambda (x) (list 'quote x)) args))))
+(define (lang-eval lang name . args)
+	(primitive-eval (cons (symbol-append lang '/ name) (map (lambda (x) (list 'quote x)) args))))
 
 (define (user-macro name) (symbol-append 'macro// name))
 
@@ -45,15 +45,15 @@
 		((list? x) (serialise-list lang x))
 		((symbol? x) (symbol->string x))
 		((number? x) (number->string x))
-		((string? x) (lang-eval lang '/escape-string x)))))
+		((string? x) (lang-eval lang 'escape-string x)))))
 
 (define (serialise-list lang x)
 	(let ((first (car x)) (rest (cdr x)))
 	(cond
-		((list? first) (lang-eval lang '/nested-function (serialise-list lang first) rest))
+		((list? first) (lang-eval lang 'nested-function (serialise-list lang first) rest))
 		((eq? 'macro first) (add-user-macro rest) #f)
 		((lang-proc? lang first) (lang-eval lang first rest))
-		(#t (lang-eval lang '/call-user-function x)))))
+		(#t (lang-eval lang 'call-user-function x)))))
 
 (define (file-lines file)
 	(let ((line (read file)))

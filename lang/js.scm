@@ -17,7 +17,7 @@
 		/like
 		/unlike
 		/set
-		/def
+		/define
 		/const
 		/let
 		/if
@@ -136,7 +136,7 @@
 	(string-append "return " (serialise 'js (car xs))))
 
 (define (/progn xs)
-	(string-append (parens (js/lambda (append (list nil) xs))) "()"))
+	(string-append (parens (/lambda (append (list nil) xs))) "()"))
 
 (define (/.. xs)
 	(string-join (map (partial serialise 'js) xs) "."))
