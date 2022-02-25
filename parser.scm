@@ -1,8 +1,6 @@
-(define-module (vas-script parser)
-	#:export (parse))
+(define-module (vas-script parser) #:export (parse))
 
-(use-modules (vas-script util))
-(use-modules (ice-9 textual-ports))
+(use-modules (vas-script util) (ice-9 textual-ports) (ice-9 regex))
 
 (define comment-char (make-parameter #\;))
 (define strings (make-parameter #f))
@@ -42,7 +40,12 @@
 		(push x xs)
 		(set! x (get-char port)))
 	(when (not (eof-object? x)) (unget-char port x))
-	(string->symbol (list->string (reverse xs))))
+
+	(let* ((s (list->string (reverse xs))) (len (string-length s)))
+		(cond
+			((string-match "^[0-9]+[0-9.]*$" s) (string->number s))
+			((string-match "^\".&\"$" s) (substring s 1 (- len 1)))
+			(#t (string->symbol s)))))
 
 (define (skip-comment port)
 	(define x (get-char port))

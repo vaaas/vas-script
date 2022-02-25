@@ -4,12 +4,14 @@
 ;public
 (define (serialise lang x)
 	(let ((x (user-macro-expand x)))
-	(if (list? x)
-		(serialise-list lang x)
-		(serialise-symbol x))))
+	(cond
+		((list? x) (serialise-list lang x))
+		((symbol? x) (symbol->string x))
+		((number? x) (number->string x))
+		((string? x) (lang-eval lang '/escape-string x)))))
 
 ;private
-(use-modules (vas-script util) (ice-9 regex))
+(use-modules (vas-script util))
 
 (define #{`}# 'quasiquote)
 (define #{,}# 'unquote)
@@ -62,9 +64,3 @@
 		((eq? 'macro first) (add-user-macro rest) #f)
 		((lang-proc? lang first) (lang-eval lang first rest))
 		(#t (lang-eval lang 'call-user-function x)))))
-
-(define (serialise-symbol x)
-	(define s (symbol->string x))
-	(cond
-		((string-match "^[0-9.]+" s) s)
-		(#t s)))
