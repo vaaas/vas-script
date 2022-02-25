@@ -1,0 +1,6 @@
+(type Integer)
+(type (Array x))
+(type (Tuple))
+(type IntArray (Array Integer))
+(type (Triples x) (Array (Tuple x x x)))
+;; (type IntTriples (Triples x))
