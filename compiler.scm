@@ -13,10 +13,6 @@
 ;private
 (use-modules (vas-script util))
 
-(define #{`}# 'quasiquote)
-(define #{,}# 'unquote)
-(define #{@}# 'unquote-splicing)
-
 (define (lang-proc? lang name) (defined? (symbol-append lang '/ name)))
 
 (define (lang-eval lang name . args)

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if test -z "$1" -o -z "$2"
+then
+	echo "Usage: vsc LANG FILE"
+	echo "Supported languages: js html css sql"
+fi
+
+guile /usr/share/guile/vas-script/vsc.scm -lang $1 $2
