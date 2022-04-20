@@ -6,6 +6,10 @@ This is a Scheme to anything compiler. It provides a unified, coherent lisp seri
 
 - guile (>= 2.2.7)
 
+# Installation
+
+`build.sh` will generate a deb file for you, which you can install with `dpkg`.
+
 # Examples
 
 ## Macros
