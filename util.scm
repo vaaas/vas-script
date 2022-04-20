@@ -14,7 +14,8 @@
 		brackets
 		braces
 		newlines
-		infix))
+		infix
+		plist->alist))
 
 (use-modules ((vas-script compiler) #:select (serialise)))
 
@@ -56,4 +57,9 @@
 (define (brackets x) (string-append "[" x "]"))
 (define (braces x) (string-append "{" x "}"))
 (define (newlines x) (string-append "\n" x "\n"))
-(define (infix lang i x) (string-join (map (partial serialise lang) x) i))
+(define (infix lang i x) (string-join (map (partial serialise lang) x) (string-append " " i " ")))
+
+(define (plist->alist x)
+	(if (null? x) x
+		(cons (cons (car x) (cadr x))
+			(plist->alist (cddr x)))))

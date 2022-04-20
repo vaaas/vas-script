@@ -27,7 +27,10 @@
 		/progn
 		/..
 		/get
-		/array))
+		/array
+		/object
+		/Set
+		/Map))
 
 (use-modules (vas-script util))
 (use-modules ((vas-script compiler) #:select (serialise)))
@@ -57,6 +60,8 @@
 		(#t x))))
 
 ; public bindings
+
+; basic features
 (define (/call-user-function xs)
 	(let ((name (car xs)) (args (cdr xs)))
 	(string-append (serialise 'js name) (serialise-args args))))
@@ -69,6 +74,13 @@
 (define (/escape-string x)
 	(string-append "\"" x "\""))
 
+(define (/.. xs)
+	(string-join (map (partial serialise 'js) xs) "."))
+
+(define (/get xs)
+	(string-join (map (lambda (x) (brackets (serialise 'js x))) xs) ""))
+
+; infix operators
 (define (/+ xs) (infix 'js "+" xs))
 (define (/- xs) (infix 'js "-" xs))
 (define (/&& xs) (infix 'js "&&" xs))
@@ -85,6 +97,7 @@
 (define (/unlike xs) (infix 'js "!=" xs))
 (define (/set xs) (infix 'js "=" xs))
 
+; variable and function declarations
 (define (/define xs)
 	(let
 		((first (car xs))
@@ -99,22 +112,7 @@
 (define (/let xs)
 	(define-variable "let" (car xs) (cadr xs)))
 
-(define (/if xs)
-	(string-join
-		(list
-			(serialise 'js (car xs))
-			"?"
-			(serialise 'js (cadr xs))
-			":"
-			(serialise 'js (caddr xs)))))
-
-(define (/when xs)
-	(string-append
-		(serialise 'js (car xs))
-		"?"
-		(serialise 'js (cadr xs))
-		": null"))
-
+; lambda
 (define (/lambda xs)
 	(let
 		((args (car xs))
@@ -127,17 +125,53 @@
 				(string-join
 					(map (partial serialise 'js) (maybe-add-return body)) "\n"))))))
 
+; flow control
+(define (/if xs)
+	(string-append
+		(serialise 'js (car xs))
+		" ? "
+		(serialise 'js (cadr xs))
+		" : "
+		(serialise 'js (caddr xs))))
+
+(define (/when xs)
+	(string-append
+		(serialise 'js (car xs))
+		" ? "
+		(serialise 'js (cadr xs))
+		" : null"))
+
 (define (/return xs)
 	(string-append "return " (serialise 'js (car xs))))
 
 (define (/progn xs)
 	(string-append (parens (/lambda (append (list nil) xs))) "()"))
 
-(define (/.. xs)
-	(string-join (map (partial serialise 'js) xs) "."))
-
-(define (/get xs)
-	(string-join (map (lambda (x) (brackets (serialise 'js x))) xs) ""))
-
+; data structure literals
 (define (/array xs)
-	(brackets (string-join (map (partial serialise 'js) xs) ", ")))
+	(-> xs
+		(map (partial serialise 'js))
+		(C string-join ", ")
+		brackets))
+
+(define (/object xs)
+	(-> xs
+		plist->alist
+		(map (lambda (x) (string-append (serialise 'js (car x)) ": " (serialise 'js (cdr x)))))
+		(C string-join ", ")
+		braces))
+
+(define (/Set xs)
+	(-> xs
+		/array
+		parens
+		(string-append "new Set")))
+
+(define (/Map xs)
+	(-> xs
+		plist->alist
+		(map (lambda (x) (/array (list (car x) (cdr x)))))
+		(C string-join ", ")
+		brackets
+		parens
+		(string-append "new Map")))
