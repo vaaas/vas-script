@@ -13,9 +13,11 @@
 		parens
 		brackets
 		braces
+		spaces
 		newlines
 		infix
-		plist->alist))
+		plist->alist
+		sanitise-string))
 
 (use-modules ((vas-script compiler) #:select (serialise)))
 
@@ -57,9 +59,43 @@
 (define (brackets x) (string-append "[" x "]"))
 (define (braces x) (string-append "{" x "}"))
 (define (newlines x) (string-append "\n" x "\n"))
+(define (spaces x) (string-append " " x " "))
 (define (infix lang i x) (string-join (map (partial serialise lang) x) (string-append " " i " ")))
 
 (define (plist->alist x)
 	(if (null? x) x
 		(cons (cons (car x) (cadr x))
 			(plist->alist (cddr x)))))
+
+(define (sanitise-string x)
+	(-> x
+		string->list
+		(map sanitise-char)
+		(list->string)))
+
+(define (sanitise-char x)
+	(case x
+		((#\-) #\_)
+		((#\?) #\A)
+		((#\/) #\B)
+		((#\!) #\C)
+		((#\:) #\D)
+		((#\;) #\E)
+		((#\\) #\F)
+		((#\@) #\G)
+		((#\#) #\H)
+		((#\%) #\I)
+		((#\^) #\J)
+		((#\&) #\K)
+		((#\*) #\L)
+		((#\=) #\M)
+		((#\+) #\N)
+		((#\|) #\O)
+		((#\.) #\P)
+		((#\,) #\Q)
+		((#\<) #\R)
+		((#\>) #\S)
+		((#\`) #\U)
+		((#\~) #\V)
+		(else x)
+	))
