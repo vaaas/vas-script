@@ -2,7 +2,7 @@
 	#:export (
 		/call-user-function
 		/nested-function
-		/escape-string
+		/serialise-symbol
 		/+
 		/-
 		/&&
@@ -88,8 +88,7 @@
 		(parens first)
 		(serialise-args rest)))
 
-(define (/escape-string x)
-	(string-append "\"" x "\""))
+(define (/serialise-symbol x) (serialise-symbol x))
 
 (define (/.. xs)
 	(string-join (map (partial serialise 'js) xs) "."))

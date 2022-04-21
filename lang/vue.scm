@@ -2,13 +2,13 @@
 (load-lang "html")
 (load-lang "css")
 
-(define (vue//escape-string x) (string-append "\"" x "\""))
+(define (/serialise-symbol x) (serialise-symbol x))
 
-(define (vue//nested x) #f)
+(define (/nested-function x) #f)
 
-(define (vue//call-user-function x) #f)
+(define (/call-user-function x) #f)
 
-(define (vue/template x)
+(define (/template x)
 	(string-append
 		"<template>"
 		(string-join
@@ -16,7 +16,7 @@
 			"\n")
 		"</template>"))
 
-(define (vue/style x)
+(define (/style x)
 	(string-append
 		"<style>"
 		(string-join
@@ -24,7 +24,7 @@
             "\n")
 		"</style>"))
 
-(define (vue/script x)
+(define (/script x)
 	(string-append
 		"<script>"
 		(string-join

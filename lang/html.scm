@@ -8,7 +8,7 @@
 (use-modules (vas-script util))
 (use-modules ((vas-script compiler) #:select (serialise)))
 
-(define (/escape-string x) (string-append "\"" x "\""))
+(define (/serialise-symbol x) (serialise-symbol x))
 
 (define (/nested-function x) #f)
 

@@ -4,11 +4,7 @@
 ;public
 (define (serialise lang x)
 	(let ((x (user-macro-expand x)))
-	(cond
-		((list? x) (serialise-list lang x))
-		((symbol? x) (symbol->string x))
-		((number? x) (number->string x))
-		((string? x) (lang-eval lang '/escape-string x)))))
+    (if (list? x) (serialise-list lang x) (lang-eval lang 'serialise-symbol x))))
 
 ;private
 (use-modules (vas-script util))

@@ -31,8 +31,7 @@
 		"(" first ")"
 		"(" (string-join (map (partial serialise 'c) rest) ", ") ")"))
 
-(define (/escape-string x)
-	(string-append "\"" x "\""))
+(define (/serialise-symbol x) (serialise-symbol x))
 
 (define (/include x)
 	(string-append "include " (serialise 'c (car x))))

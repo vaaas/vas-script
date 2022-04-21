@@ -18,9 +18,12 @@
 		newlines
 		infix
 		plist->alist
-		sanitise-string))
+		sanitise-string
+		serialise-symbol))
 
-(use-modules ((vas-script compiler) #:select (serialise)))
+(use-modules
+	((vas-script compiler) #:select (serialise))
+	(ice-9 regex))
 
 (define (load-lang x)
 	(module-use! (current-module) (resolve-interface (list 'vas-script 'lang x) #:prefix x)))
@@ -117,3 +120,14 @@
 		((#\~) #\V)
 		(else x)
 	))
+
+
+(define (serialise-symbol x)
+	(let*
+		((s (symbol->string x))
+		(len (string-length s)))
+	(cond
+		((string-match "^[0-9]+[0-9.]*$" s) s)
+		((string-match "^(\"|').*(\"|')$" s) s)
+		((string-match "^'.*$" s) (string-append "\"" (substring s 1 len)) "\"")
+		(#t s))))

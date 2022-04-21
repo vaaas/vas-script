@@ -54,7 +54,7 @@
 (define (prefix p x) (string-append p (serialise 'css x)))
 
 ; public functions
-(define (/escape-string x) (string-append "\"" x "\""))
+(define (/serialise-symbol x) (serialise-symbol x))
 
 (define (/nested-function x) #f)
 
