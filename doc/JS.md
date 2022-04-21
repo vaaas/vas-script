@@ -59,20 +59,23 @@ Dot-chaining:
 
 Can be used for method chaining as well
 
-`(. document body (querySelector '#app) (querySelectorAll 'p))
-; document.body.querySelector("#app").querySelectorAll("p")`
+```
+(. document body (querySelector '#app) (querySelectorAll 'p))
+; document.body.querySelector("#app").querySelectorAll("p")
+```
 
 Array syntax is also provided
 
-`(get document "body" "chidren" 0)
-; document["body"]["children"][0]`
+```
+(get document "body" "chidren" 0)
+; document["body"]["children"][0]
+```
 
 ## Keywords
 
 All keywords are available with function-like syntax. For example:
 
-`(new (Date))
-; new Date()`
+`(new (Date)) ; new Date()`
 
 - `return`
 - `yield`
@@ -115,8 +118,10 @@ Let variables:
 
 IIFE:
 
-`(progn (. console (log 123)) "Hello, world!")
-; (function() { console.log(123) ; return "Hello, world!" })()`
+```
+(progn (. console (log 123)) "Hello, world!")
+; (function() { console.log(123) ; return "Hello, world!" })()
+```
 
 Static imports:
 
