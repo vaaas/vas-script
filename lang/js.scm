@@ -58,7 +58,7 @@
 (define (declare-function name args body)
 	(string-append
 		"function "
-		(sanitise-string (symbol->string name))
+		(if name (sanitise-string (symbol->string name)) "")
 		(serialise-args args)
 		" "
 		(-> body
@@ -124,6 +124,8 @@
 		(declare-function (car first) (cdr first) rest)
 		(declare-variable "var" first (car rest)))))
 
+(define (/lambda xs) (parens (declare-function #f (car xs) (cdr xs))))
+
 (define (/const xs)
 	(declare-variable "const" (car xs) (cadr xs)))
 
@@ -133,38 +135,24 @@
 (define (/from xs)
 	(let ((len (length xs)))
 	(cond
-		((= 1 len) (string-append "import " (serialise 'js (car xs)))) ; side-effect import
-		((and (= 2 len) (list? (cadr xs)) ; import named exports
+		((= 1 len) ; side-effect import
+			(string-append "import " (serialise 'js (car xs))))
+		((and (= 2 len) (list? (cadr xs))) ; import named exports
+			(-> xs
+				cadr
+				(map (lambda (x) (if (list? x)
+					(string-append (serialise 'js (car x)) " as " (serialise 'js (cadr x)))
+					(serialise 'js x))))
+				(C string-join ", ")
+				spaces
+				braces
+				($ string-append "import " #:$ " from " (serialise 'js (car xs)))))
+		(#t ; import default export
 			(string-append
 				"import "
-				(-> xs
-					cadr
-					(map (lambda (x)
-						(if (list? x)
-							(string-append (serialise 'js (car x)) " as " (serialise 'js (cadr x)))
-							(serialise 'js x))))
-					(C string-join ", ")
-					spaces
-					braces)
+				(serialise 'js (cadr xs))
 				" from "
-				(serialise 'js (car xs)))))
-		(#t (string-append ; import default export
-			"import "
-			(serialise 'js (cadr xs))
-			" from " (serialise 'js (car xs)))))))
-
-; lambda
-(define (/lambda xs)
-	(let
-		((args (car xs))
-		(body (cdr xs)))
-	(string-append
-		"function"
-		(serialise-args args)
-		(braces
-			(newlines
-				(string-join
-					(map (partial serialise 'js) (maybe-add-return body)) "\n"))))))
+				(serialise 'js (car xs)))))))
 
 ; flow control
 (define (/if xs)
