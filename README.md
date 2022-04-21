@@ -37,6 +37,8 @@ Additionally, the following special symbols are provided:
 
 ## Javascript
 
+Also consult the [JS documentation](doc/JS.md)
+
 ```scheme
 (define (fibonacci x)
 	(if (< x 1) 0
