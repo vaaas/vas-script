@@ -129,5 +129,5 @@
 	(cond
 		((string-match "^[0-9]+[0-9.]*$" s) s)
 		((string-match "^(\"|').*(\"|')$" s) s)
-		((string-match "^'.*$" s) (string-append "\"" (substring s 1 len)) "\"")
+		((string-match "^'.*$" s) (string-append "\"" (substring s 1 len) "\""))
 		(#t s))))

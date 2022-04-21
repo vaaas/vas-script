@@ -24,7 +24,7 @@
 		/when
 		/lambda
 		/progn
-		/..
+		/.
 		/get
 		/array
 		/object
@@ -32,10 +32,13 @@
 		/Map
 		/from
 		/return
+		/yield
 		/new
 		/async
 		/await
-		/throw))
+		/throw
+		/export
+		/default-export))
 
 (use-modules (vas-script util))
 (use-modules ((vas-script compiler) #:select (serialise)))
@@ -81,7 +84,9 @@
 ; basic features
 (define (/call-user-function xs)
 	(let ((name (car xs)) (args (cdr xs)))
-	(string-append (serialise 'js name) (serialise-args args))))
+	(string-append
+		(sanitise-string (serialise 'js name))
+		(serialise-args args))))
 
 (define (/nested-function first rest)
 	(string-append
@@ -90,7 +95,7 @@
 
 (define (/serialise-symbol x) (serialise-symbol x))
 
-(define (/.. xs)
+(define (/. xs)
 	(string-join (map (partial serialise 'js) xs) "."))
 
 (define (/get xs)
@@ -135,7 +140,9 @@
 	(cond
 		((= 1 len) ; side-effect import
 			(string-append "import " (serialise 'js (car xs))))
-		((and (= 2 len) (list? (cadr xs))) ; import named exports
+		((eq? '* (cadr xs))
+			(string-append "import * as " (serialise 'js (caddr xs)) " from " (serialise 'js (car xs))))
+		((list? (cadr xs)) ; import named exports
 			(-> xs
 				cadr
 				(map (lambda (x) (if (list? x)
@@ -181,7 +188,7 @@
 (define (/object xs)
 	(-> xs
 		plist->alist
-		(map (lambda (x) (string-append (serialise 'js (car x)) ": " (serialise 'js (cdr x)))))
+		(map (lambda (x) (string-append (brackets (serialise 'js (car x))) ": " (serialise 'js (cdr x)))))
 		(C string-join ", ")
 		braces))
 
@@ -202,7 +209,10 @@
 
 ; keywords
 (define (/return xs) (string-append "return " (serialise 'js (car xs))))
+(define (/yield xs) (string-append "yield " (serialise 'js (car xs))))
 (define (/async xs) (string-append "async " (serialise 'js (car xs))))
 (define (/await xs) (parens (string-append "await " (serialise 'js (car xs)))))
 (define (/new xs) (string-append "new " (serialise 'js (car xs))))
 (define (/throw xs) (string-append "throw " (serialise 'js (car xs))))
+(define (/export xs) (string-append "export " (serialise 'js (car xs))))
+(define (/default-export xs) (string-append "export default " (serialise 'js (car xs))))
