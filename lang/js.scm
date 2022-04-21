@@ -69,11 +69,10 @@
 			braces)))
 
 (define (maybe-add-return x)
-	(let ((x (car x)) (xs (cdr x)))
 	(cond
-		((not (null? xs)) (cons x (maybe-add-return xs)))
-		((or (not (list? x)) (not (eq? 'return (car x)))) (list (list 'return x)))
-		(#t x))))
+		((not (null? (cdr x))) (cons (car x) (maybe-add-return (cdr x))))
+		((and (list? (car x)) (eq? 'return (caar x))) x)
+		(#t (list (list 'return (car x))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public bindings
@@ -171,7 +170,7 @@
 		" : null"))
 
 (define (/progn xs)
-	(string-append (parens (/lambda (append (list nil) xs))) "()"))
+	(-> xs (append (list nil)) /lambda (C string-append "()")))
 
 ; data structure literals
 (define (/array xs)

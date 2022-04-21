@@ -30,6 +30,8 @@
 ; push an item on top of a list, modifying the list
 (define-macro (push x xs) `(set! ,xs (cons ,x ,xs)))
 
+(define-macro (eif cond good bad) `(if (null? ,cond) ,good ,bad))
+
 (define-macro (ewhen cond . then) `(if (null? ,cond) nil (begin ,@then)))
 
 (define-macro (ewhile cond . body) `(while (not (null? ,cond)) ,@body))
