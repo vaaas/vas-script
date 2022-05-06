@@ -16,6 +16,7 @@
 		braces
 		spaces
 		newlines
+		quotes
 		infix
 		plist->alist
 		sanitise-string
@@ -80,6 +81,7 @@
 (define (braces x) (string-append "{" x "}"))
 (define (newlines x) (string-append "\n" x "\n"))
 (define (spaces x) (string-append " " x " "))
+(define (quotes x) (string-append "\"" x "\""))
 (define (infix lang i x) (string-join (map (partial serialise lang) x) (string-append " " i " ")))
 
 ; turns a plist into an alist
@@ -121,7 +123,6 @@
 		(else x)
 	))
 
-
 (define (serialise-symbol x)
 	(let*
 		((s (symbol->string x))
@@ -129,5 +130,5 @@
 	(cond
 		((string-match "^[0-9]+[0-9.]*$" s) s)
 		((string-match "^(\"|').*(\"|')$" s) s)
-		((string-match "^'.*$" s) (string-append "\"" (substring s 1 len) "\""))
+		((string-match "^'.*$" s) (quotes (substring s 1 len)))
 		(#t s))))
