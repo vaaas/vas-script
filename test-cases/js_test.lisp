@@ -24,3 +24,4 @@
 	(. console (log a b c)))
 (set (. document body (getFirstElementChild 1 2 3)) (array 1 2 3))
 (const my/cool\map (Map 1 (array 1 2 3) 2 (array 2 3 4) 3 (array 3 4 5)))
+(get x 1 2 'yo 3)

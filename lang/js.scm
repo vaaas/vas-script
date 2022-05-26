@@ -99,7 +99,13 @@
 	(string-join (map (partial serialise 'js) xs) "."))
 
 (define (/get xs)
-	(string-join (map (lambda (x) (brackets (serialise 'js x))) xs) ""))
+	(string-append
+		(serialise 'js (car xs))
+		(string-join
+			(map
+				(lambda (x) (brackets (serialise 'js x)))
+				(cdr xs))
+			"")))
 
 ; infix operators
 (define (/+ xs) (infix 'js "+" xs))
